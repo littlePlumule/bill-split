@@ -2,7 +2,15 @@
   <ul v-if="members.length !== 0">
     <li v-for="member of members" :key="member.id" v-cloak>
       <p>{{ member.name }}</p>
-      <div class="price"><span>NT$ </span>{{ member.price }}</div>
+      <div class="price receivables" v-if="resultPrice(member) > 0">
+        <span>應收NT$ </span>{{ resultPrice(member) }}
+      </div>
+      <div class="price payable" v-else-if="resultPrice(member) < 0">
+        <span>應付NT$ </span>{{ resultPrice(member) }}
+      </div>
+      <div class="price" v-else="resultPrice(member)">
+        <span>NT$ </span>{{ resultPrice(member) }}
+      </div>
     </li>
   </ul>
   <div class="no-member" v-else>目前無成員</div>
@@ -10,11 +18,24 @@
 </template>
 
 <script setup>
-const props = defineProps(['members'])
+const props = defineProps(['members', 'payments'])
 const emit = defineEmits(['show-member'])
 
 function showMember() {
   emit('show-member')
+}
+
+function resultPrice(member) {
+  let totalPrice = 0
+  let totalPay = 0
+  for (let payment of props.payments) {
+    if (payment.payerId === member.id) {
+      totalPay += payment.paymentPrice
+    }
+    totalPrice += payment.paymentPrice
+  }
+  let result = (totalPay - totalPrice / props.members.length).toFixed(2)
+  return result
 }
 </script>
 

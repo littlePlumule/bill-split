@@ -9,7 +9,8 @@
   </payment-modal>
   <div class="container">
     <main>
-      <Members v-if="toggleShow" :members="members" @show-member="showMember"> </Members>
+      <Members v-if="toggleShow" :members="members" :payments="payments" @show-member="showMember">
+      </Members>
       <Payments v-else :payments="payments" @del-payment="delPayment"></Payments>
     </main>
     <footer>
@@ -55,7 +56,6 @@ function addMember(name) {
   const member = {
     id: uuidv4(),
     name,
-    price: 0
   }
   members.push(member)
 }
