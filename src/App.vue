@@ -16,7 +16,7 @@
     <footer>
       <button class="share-payment" @click="toggle">{{ toggleName }}</button>
       <button class="add-payment" @click="showPayment">&#x2b;</button>
-      <button class="end-share">結束分帳</button>
+      <button class="end-share" @click="endShare">結束分帳</button>
     </footer>
   </div>
 </template>
@@ -29,7 +29,7 @@ import memberModal from './components/AddMembers.vue'
 import Payments from './components/Payments.vue'
 import paymentModal from './components/AddPayments.vue'
 
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 
 let toggleShow = ref(true)
 
@@ -55,10 +55,18 @@ function closeMember() {
 function addMember(name) {
   const member = {
     id: uuidv4(),
-    name,
+    name
   }
   members.push(member)
 }
+
+watch(
+  members,
+  () => {
+    localStorage.setItem('members', JSON.stringify(members))
+  },
+  { deep: true }
+)
 
 const payments = reactive([])
 let paymentShow = ref(false)
@@ -87,6 +95,24 @@ function delPayment(paymentId) {
   const targetIndex = payments.findIndex((item) => item.id === paymentId)
   payments.splice(targetIndex, 1)
 }
+
+watch(
+  payments,
+  () => {
+    localStorage.setItem('payments', JSON.stringify(payments))
+  },
+  { deep: true }
+)
+
+function endShare() {
+  members.length = 0;
+  payments.length = 0;
+}
+
+onMounted(() => {
+  Object.assign(members, JSON.parse(localStorage.getItem('members')) || [])
+  Object.assign(payments, JSON.parse(localStorage.getItem('payments')) || []) 
+})
 </script>
 
 <style>
