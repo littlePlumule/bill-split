@@ -1,24 +1,44 @@
 <template>
   <member-modal :show="memberShow" @close="closeMember" @add-member="addMember"></member-modal>
+  <payment-modal
+    :show="paymentShow"
+    :members="members"
+    @close="closePayment"
+    @add-payment="addPayment"
+  >
+  </payment-modal>
   <div class="container">
     <main>
-      <Members :members="members" @show-member="showMember"> </Members>
+      <Members v-if="toggleShow" :members="members" @show-member="showMember"> </Members>
+      <Payments v-else :payments="payments" @del-payment="delPayment"></Payments>
     </main>
     <footer>
-      <button class="share-payment">分帳款項</button>
-      <button class="add-payment">&#x2b;</button>
+      <button class="share-payment" @click="toggle">{{ toggleName }}</button>
+      <button class="add-payment" @click="showPayment">&#x2b;</button>
       <button class="end-share">結束分帳</button>
     </footer>
   </div>
 </template>
 
 <script setup>
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 
 import Members from './components/Members.vue'
 import memberModal from './components/AddMembers.vue'
+import Payments from './components/Payments.vue'
+import paymentModal from './components/AddPayments.vue'
 
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
+
+let toggleShow = ref(true)
+
+let toggleName = computed(() => {
+  return toggleShow.value ? '分帳款項' : '分帳成員'
+})
+
+function toggle() {
+  toggleShow.value = !toggleShow.value
+}
 
 const members = reactive([])
 let memberShow = ref(false)
@@ -37,7 +57,35 @@ function addMember(name) {
     name,
     price: 0
   }
-  members.push(member);
+  members.push(member)
+}
+
+const payments = reactive([])
+let paymentShow = ref(false)
+
+function showPayment() {
+  paymentShow.value = true
+}
+
+function closePayment() {
+  paymentShow.value = false
+}
+
+function addPayment({ paymentName, paymentPrice, payerId }) {
+  let payer = members.find((item) => item.id === payerId)
+  const payment = {
+    id: uuidv4(),
+    paymentName,
+    paymentPrice,
+    payer: payer.name,
+    payerId
+  }
+  payments.push(payment)
+}
+
+function delPayment(paymentId) {
+  const targetIndex = payments.findIndex((item) => item.id === paymentId)
+  payments.splice(targetIndex, 1)
 }
 </script>
 
